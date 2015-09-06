@@ -1,0 +1,3 @@
+#! ruby
+
+require 'http_proxy_pool'
