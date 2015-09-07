@@ -2,19 +2,18 @@
 
 module HttpProxyPool
   class Kuaidaili1 < BaseSite
-    def initialize(args = {})
-      super(args)
-      @url = args[:url] || 'http://www.kuaidaili.com/free/inha/%s'
+    def setup
+      @url = 'http://www.kuaidaili.com/free/inha/%s'
     end
 
     def run
       start_page  = 1
-      end_page    = 10
+      end_page    = 2
 
       start_page.upto(end_page).each do |idx|
-        url = url % idx
+        @url = @url % idx
 
-        page = @agent.get(url).search("tbody").search("tr")
+        page = @agent.get(@url).search("tbody").search("tr")
         page.each do |tr|
           yield node(tr)
         end

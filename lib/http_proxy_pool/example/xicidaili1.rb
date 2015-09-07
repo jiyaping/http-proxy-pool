@@ -2,19 +2,18 @@
 
 module HttpProxyPool
   class Xicidaili1 < BaseSite
-    def initialize(args = {})
-      super(args)
-      @url = args[:url] || 'http://www.xicidaili.com/nn/%s'
+    def setup
+      @url = 'http://www.xicidaili.com/nn/%s'
     end
 
     def run
       start_page  = 1
-      end_page    = 10
+      end_page    = 2
 
       start_page.upto(end_page).each do |idx|
-        url = url % idx
+        @url = @url % idx
 
-        page = @agent.get(url).search("#ip_list").search("tr")
+        page = @agent.get(@url).search("#ip_list").search("tr")
         page.each do |tr|
           yield node(tr)
         end
@@ -23,7 +22,6 @@ module HttpProxyPool
 
     def node(node)
       tds = node.search('td')
-
       fields = {}
 
       fields[:nation]     = tds[1].at('img')['alt']

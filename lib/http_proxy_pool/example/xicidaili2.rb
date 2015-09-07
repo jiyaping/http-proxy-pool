@@ -2,9 +2,8 @@
 
 module HttpProxyPool
   class Xicidaili2 < Xicidaili1
-    def initialize(args = {})
-      super(args)
-      @url = args[:url] || 'http://www.xicidaili.com/nt/%s'
+    def setup
+      @url = 'http://www.xicidaili.com/nn/%s'
     end
   end
 end

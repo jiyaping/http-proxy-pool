@@ -3,15 +3,17 @@
 module HttpProxyPool
   class BaseSite
     attr_accessor :agent,
-                  :url
+                  :url,
+                  :logger
 
     def initialize(args = {})
       @agent  = args[:agent] || Mechanize.new
       @url    = args[:url]
+      @logger = args[:logger]
     end
 
     def sitename
-      URI.new(URI.encode(@url)).host
+      URI.parse(URI.encode(@url)).host
     end
   end
 end
