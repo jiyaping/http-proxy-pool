@@ -1,0 +1,39 @@
+#encoding : utf-8
+
+sitetask("http://www.kuaidaili.com/free/inha/") do
+  nextpage do
+    curr_idx = 0
+
+    if agent.page.at('.active')
+      curr_idx = agent.page.at('.active').text.to_i
+    end
+
+    last_page = page.at("#listnav").search("a[href*='/free']").last.text.to_i
+    return if curr_idx == last_page
+
+    File.join(url, (curr_idx + 1).to_s)
+  end
+
+  parser do
+    ips = []
+
+    agent.page.search("tbody").search("tr").each do |node|
+      tds = node.search('td')
+
+      fields = {}
+
+      fields[:ip]         = tds[0].text
+      fields[:port]       = tds[1].text
+      fields[:proxy_level]= tds[2].text
+      fields[:proxy_type] = tds[3].text
+      fields[:province]   = tds[4].at('a').text
+      fields[:speed]      = tds[5].text
+      fields[:added_time] = tds[6].text
+      fields[:src_from]   = sitename
+
+      ips << fields
+    end
+
+    ips
+  end
+end

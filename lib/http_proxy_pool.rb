@@ -2,8 +2,9 @@
 
 require 'mechanize'
 
+require 'http_proxy_pool/error'
 require 'http_proxy_pool/utils'
-require 'http_proxy_pool/basesite'
+require 'http_proxy_pool/basetask'
 require 'http_proxy_pool/proxy'
 require 'http_proxy_pool/proxy_pool'
 require 'http_proxy_pool/version'
@@ -18,5 +19,4 @@ module HttpProxyPool
   @logger = Logger.new(File.join(@home, 'proxy.log'), 2_000_000)
 
   init_default_script
-  load_script
 end

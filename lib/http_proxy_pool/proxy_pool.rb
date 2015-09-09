@@ -43,13 +43,10 @@ module HttpProxyPool
     end
 
     def crawling
-      @script.each do |site|
+      @script.each do |taskfile|
         begin
-          site_class = instance_eval(site.capitalize!)
-
-          site_obj = site_class.new(:agent => @agent,
-                                    :logger => @logger)
-          site_obj.setup if site_obj.respond_to? :setup
+          task = Basetask.new(:agent => @agent,:logger => @logger)
+          task.instance_eval(read_taskfile(taskfile))
 
           site_obj.run do |fields|
             proxy = Proxy.new(fields)
@@ -75,6 +72,17 @@ module HttpProxyPool
 
     def load_proxy
       @proxys = YAML.load_file(@data_path)
+    end
+
+    def read_taskfile(file)
+      cnt = ''
+      File.open(file) do |f|
+        while(line = f.gets)
+          cnt << line
+        end
+      end
+
+      cnt
     end
 
     def get_agent_alias
