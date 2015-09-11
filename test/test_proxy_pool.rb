@@ -5,7 +5,7 @@ require 'http_proxy_pool'
 class ProxyPoolTest < Minitest::Test
   def setup
     data_path = File.join(HttpProxyPool.home, 'ips-test.yaml')
-    script    = HttpProxyPool.execute_script
+    script    = Dir["#{HttpProxyPool.home}/script/*.site"]
     logger    = HttpProxyPool.logger
 
     @proxy_pool = HttpProxyPool::ProxyPool.new(

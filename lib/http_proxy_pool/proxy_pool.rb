@@ -42,13 +42,13 @@ module HttpProxyPool
     def vaild_condition?
     end
 
-    def crawling
-      @script.each do |taskfile|
+    def crawling(lastest = false)
+      @script.each do |file|
         begin
           task = Basetask.new(:agent => @agent,:logger => @logger)
-          task.instance_eval(read_taskfile(taskfile))
+          task.instance_eval(read_taskfile(file))
 
-          site_obj.run do |fields|
+          task.ips(lastest) do |fields|
             proxy = Proxy.new(fields)
             @proxys << proxy unless include?(proxy)
           end

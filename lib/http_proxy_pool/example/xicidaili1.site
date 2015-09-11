@@ -1,20 +1,20 @@
 #encoding : utf-8
 
-sitetask("http://www.xicidaili.com/nn/") do
-  nextpage do
+sitetask(:url=>"http://www.xicidaili.com/nn/") do
+  nextpage do |agent|
     curr_idx = 0
 
     if agent.page.at('.current')
       curr_idx = agent.page.at('.current').text.to_i
     end
 
-    last_page = page.at(".pagination").search("a[href*='/nn/']").last.text.to_i
+    last_page = agent.page.at(".pagination").search("a[href*='/nn/']").last.text.to_i
     return if curr_idx == last_page
 
     File.join(url, (curr_idx + 1).to_s)
   end
 
-  parser do
+  parser do |agent|
     ips = []
 
     agent.page.search("#ip_list").search("tr")[1..-1].each do |node|

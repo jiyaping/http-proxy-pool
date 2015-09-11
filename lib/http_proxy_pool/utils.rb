@@ -23,12 +23,6 @@ module HttpProxyPool
     @script_path
   end
 
-  def execute_script
-    Dir.entries(@script_path).select{ |item| !(item == '.' or item == '..') }.map do |item|
-      item.sub('.rb', '') if item.end_with? '.rb'
-    end
-  end
-
   def logger
     @logger
   end

@@ -8,30 +8,38 @@ module HttpProxyPool
                   :page_parser,
                   :next_page
 
-    def sitetask(opts)
+    def initialize(opts = {})
+      agent  = opts[:agent]
+      logger = opts[:logger]
+      url    = opts[:url]
+    end
+
+    def sitetask(opts = {})
       raise ScriptError.new("script do not specify a url!") unless opts[:url]
 
       url   = opts[:url]
       agent = opts[:agent] || Mechanize.new
-      logger= opts[:logger]|| HttpProxyPool.logger
 
       yield
+
+      puts page_parser.class
+      puts next_page.class
     end
 
-    def ips(lastpage = 1)
+    def ips(lastest = true)
       page_counter = 0
 
       begin
-        while(url = next_page.call)
-          agent.get(url)
+        while(uri = next_page.call(agent))
+          agent.get(uri)
           page_counter += 1
-          page_parser.call.each do |field|
+          instance_eval(page_parser).each do |field|
             yield field
           end
-          break if page_counter <= page_counter
+          break if (page_counter <= page_counter && lastest) 
         end
       rescue Mechanize::ResponseCodeError => e
-        @logger.warn("#{agent.page.uri} is the last page. #{e.page}")
+        @logger.warn("#{agent.page.uri} is the last page. #{e.to_s}")
       rescue => e
         @logger.error("parser the page #{agent.page.uri} Error occurred. #{e.to_s}")
       end
@@ -42,7 +50,7 @@ module HttpProxyPool
     end
 
     def nextpage(&block)
-      next_page = &block
+      next_page = block
     end
 
     def curr_page
