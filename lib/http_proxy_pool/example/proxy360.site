@@ -1,0 +1,21 @@
+sitetask("http://www.proxy360.cn/default.aspx") do
+  parser do
+    ips = []
+
+    agent.page.search(".proxylistitem").each do |node|
+      tds = node.search('.tbBottomLine')
+      fields = {}
+
+      fields[:ip]         = tds[0].text.strip
+      fields[:port]       = tds[1].text.strip
+      fields[:proxy_level]= tds[2].text.strip
+      fields[:nation]     = tds[3].text.strip
+      fields[:added_time] = tds[4].text.strip
+      fields[:src_from]   = sitename
+
+      ips << fields
+    end
+
+    ips
+  end
+end

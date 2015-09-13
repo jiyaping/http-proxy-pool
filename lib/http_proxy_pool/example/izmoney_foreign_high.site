@@ -1,0 +1,22 @@
+sitetask("http://ip.izmoney.com/search/foreign/high/index.html") do
+  parser do
+    ips = []
+
+    agent.page.search("tbody").search("tr").each do |node|
+      tds = node.search('td')
+      fields = {}
+
+      fields[:ip]         = tds[0].text
+      fields[:port]       = tds[1].text
+      fields[:nation]     = tds[2].text
+      fields[:proxy_level]= tds[4].text
+      fields[:proxy_type] = tds[5].text
+      fields[:added_time] = DateTime.now
+      fields[:src_from]   = sitename
+
+      ips << fields
+    end
+
+    ips
+  end
+end

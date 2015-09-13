@@ -1,0 +1,51 @@
+#! ruby
+
+lib = File.expand_path(File.dirname(__FILE__) + '/../lib')
+$LOAD_PATH.unshift(lib) if File.directory?(lib) && !$LOAD_PATH.include?(lib)
+
+require 'thor'
+require "http_proxy_pool"
+
+class HttpProxyPoolApp < Thor
+  @@proxy_pool = HttpProxyPool::ProxyPool.new(
+                    :data_path=> File.join(HttpProxyPool.home, 'ips.yml'),
+                    :script   => Dir["#{HttpProxyPool.home}/script/*.site"],
+                    :logger   => HttpProxyPool.logger
+                  )
+
+  desc 'status', 'show proxy pool status.'
+  def status
+    @@proxy_pool.status
+  end
+
+  desc 'crawl [WAY]', 'gather ip source store to local file through WAY.'
+  method_option :lastest, :aliases  => '-l',
+                          :type     => :boolean,
+                          :default  => true,
+                          :desc     => 'only crawl recently ip.'
+  method_option :check, :aliases  => '-c',
+                        :type     => :boolean,
+                        :default  => false,
+                        :desc     => 'store it after check if available.' 
+  def crawl(way = 'script')
+    if way == 'script'
+      lastest = options[:lastest]
+      check   = options[:check]
+
+      @@proxy_pool.crawling(lastest, check)
+    end
+  end
+
+  desc 'get', 'get ip from local storage.'
+  method_option :force_check, :aliases  => '-fc',
+                              :type     => :boolean,
+                              :default  => true,
+                              :desc     => 'check the ip if ready to use.'
+  def get
+    force_check = options[:force_check]
+
+    puts @@proxy_pool.get_random_proxy(force_check)
+  end
+end
+
+HttpProxyPoolApp.start

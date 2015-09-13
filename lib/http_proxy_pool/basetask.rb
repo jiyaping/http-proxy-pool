@@ -9,56 +9,73 @@ module HttpProxyPool
                   :next_page
 
     def initialize(opts = {})
-      agent  = opts[:agent]
-      logger = opts[:logger]
-      url    = opts[:url]
+      @agent  = opts[:agent]
+      @logger = opts[:logger]
+      @url    = opts[:url]
     end
 
-    def sitetask(opts = {})
-      raise ScriptError.new("script do not specify a url!") unless opts[:url]
+    def sitetask(url, opts = {})
+      raise ScriptError.new("script do not specify a url!") unless url
 
-      url   = opts[:url]
-      agent = opts[:agent] || Mechanize.new
+      @url      = url
+      @agent    = opts[:agent] || Mechanize.new
+      @logger   ||= opts[:logger]
+
+      #for debug
+      #@agent.set_proxy '127.0.0.1', 8888
 
       yield
-
-      puts page_parser.class
-      puts next_page.class
     end
 
     def ips(lastest = true)
-      page_counter = 0
+      uri = @url
 
-      begin
-        while(uri = next_page.call(agent))
-          agent.get(uri)
-          page_counter += 1
-          instance_eval(page_parser).each do |field|
+      loop do
+        @logger.info("start crawling page [#{uri}] ...")
+        @agent.get(uri)
+        # get all page need sleep a random time
+        rand_sleep unless lastest
+
+        begin
+          instance_eval(&page_parser).each do |field|
             yield field
-          end
-          break if (page_counter <= page_counter && lastest) 
+          end  
+        rescue Exception => e
+          @logger.error("parsing page error[#{uri}]. #{e.to_s}")
+          break
         end
-      rescue Mechanize::ResponseCodeError => e
-        @logger.warn("#{agent.page.uri} is the last page. #{e.to_s}")
-      rescue => e
-        @logger.error("parser the page #{agent.page.uri} Error occurred. #{e.to_s}")
+
+        begin
+          break unless @next_page
+          uri = instance_eval(&next_page)
+          break unless uri
+        rescue => e
+          @logger.error("error occoured when get next page[#{uri}]. #{e.to_s}")
+          break
+        end
+
+        break if lastest
       end
     end
 
     def parser(&block)
-      page_parser = block
+      @page_parser = block if block_given?
     end
 
     def nextpage(&block)
-      next_page = block
+      @next_page = block if block_given?
     end
 
     def curr_page
-      agent.page.uri
+      @agent.page.uri
     end
 
     def sitename
       URI.parse(URI.encode(@url)).host
+    end
+
+    def rand_sleep(max_tick = 2)
+      sleep rand(max_tick)
     end
   end
 end

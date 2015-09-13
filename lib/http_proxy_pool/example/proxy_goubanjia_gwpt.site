@@ -1,0 +1,23 @@
+sitetask("http://proxy.goubanjia.com/free/gwpt/index.shtml") do
+  parser do
+    ips = []
+
+    agent.page.search("tbody").search("tr").each do |node|
+      tds = node.search('td')
+      fields = {}
+
+      fields[:ip]         = tds[0].search(":not(p[style='display: none;'])").text
+      fields[:port]       = tds[1].text
+      fields[:proxy_level]= tds[2].text
+      fields[:proxy_type] = tds[3].text
+      fields[:nation]     = tds[4].text
+      fields[:province]   = tds[5].text
+      fields[:added_time] = DateTime.now
+      fields[:src_from]   = sitename
+
+      ips << fields
+    end
+
+    ips
+  end
+end

@@ -35,5 +35,9 @@ module HttpProxyPool
     def to_arr
       [@ip, @port, @proxy_type, @proxy_level, @nation, @province]
     end
+
+    def to_s
+      "#{@ip}\t#{@port}"
+    end
   end
 end
