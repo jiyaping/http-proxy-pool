@@ -28,12 +28,16 @@ class HttpProxyPoolApp < Thor
                         :default  => false,
                         :desc     => 'store it after check if available.' 
   def crawl(way = 'script')
+    puts "wait...."
+
     if way == 'script'
       lastest = options[:lastest]
       check   = options[:check]
 
       @@proxy_pool.crawling(lastest, check)
     end
+
+    puts "done."
   end
 
   desc 'get', 'get ip from local storage.'
@@ -41,10 +45,15 @@ class HttpProxyPoolApp < Thor
                               :type     => :boolean,
                               :default  => true,
                               :desc     => 'check the ip if ready to use.'
+  method_option :thread_num, :aliases  => '-t',
+                              :type     => :numeric,
+                              :default  => 10,
+                              :desc     => 'num of search thread.'
   def get
     force_check = options[:force_check]
+    thread_num  = options[:thread_num]
 
-    puts @@proxy_pool.get_random_proxy(force_check)
+    puts @@proxy_pool.get_random_proxy(force_check, thread_num)
   end
 end
 

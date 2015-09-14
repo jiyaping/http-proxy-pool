@@ -16,7 +16,7 @@ module HttpProxyPool
                   :src_from,
                   :try_times
 
-    def initialize(args)
+    def initialize(args = {})
       @ip         = args[:ip]
       @port       = args[:port]
       @username   = args[:username] || ''

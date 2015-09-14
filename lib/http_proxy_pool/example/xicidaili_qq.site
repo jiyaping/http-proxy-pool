@@ -6,7 +6,7 @@ sitetask("http://www.xicidaili.com/qq/") do
       curr_idx = agent.page.at('.current').text.to_i
     end
 
-    last_page = agent.page.at(".pagination").search("a[href*='/wt/']").last.text.to_i
+    last_page = agent.page.at(".pagination").search("a[href*='/qq/']").last.text.to_i
     return if curr_idx == last_page
 
     File.join(url, (curr_idx + 1).to_s)

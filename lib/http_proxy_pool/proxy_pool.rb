@@ -5,9 +5,9 @@ module HttpProxyPool
     attr_accessor :proxys, :logger
 
     def initialize(args)
-      @data_path  = args[:data_path]
-      @script     = args[:script]
-      @logger     = args[:logger]
+      @data_path  = args[:data_path] || File.join(HttpProxyPool.home, 'ips.yaml')
+      @script     = args[:script] || Dir["#{HttpProxyPool.home}/script/*.site"]
+      @logger     = args[:logger] || HttpProxyPool.logger
       @proxys     = []
 
       @agent      = Mechanize.new
@@ -16,50 +16,78 @@ module HttpProxyPool
       load_proxy if File.exists? @data_path
     end
 
-    def unused_proxy(minutes)
-      
-    end
-
-    # query interface
-    def get_proxy(args = {})
-      return get_random_proxy if args.empty?
-
-      @proxys.select do |proxy|
-        instance_eval(build_query_parameter(args,'proxy'))
-      end
-    end
-
     def status
       puts "proxy count : #{@proxys.size}"
     end
 
-    def build_query_parameter(args, prefix = 'proxy')
+    # query interface
+    def query(args = {})
+      begin
+        selected_proxy = @proxys.select do |proxy|
+                           instance_eval(build_query_parameter('proxy', args))
+                         end
+      rescue => e
+        raise QueryError.new("query parameter error!")
+      end
+
+      return selected_proxy unless block_given?
+
+      selected_proxy.each do |proxy|
+        yield proxy
+      end
+    end
+
+    def build_query_parameter(prefix = 'proxy', args)
       condition_str = ''
+
+      args = query_key_filter(args)
 
       args.each do |key, express|
         condition_str << "#{prefix}.#{key} #{express} && "
       end
 
-      @logger.debug(condition_arr)
+      condition_str.sub!(/\s?&&\s?$/, '')
 
-      condition_arr << '1 == 1'
+      @logger.debug(condition_str)
+
+      condition_str
     end
 
-    def get_random_proxy(check = true)
-      begin
-        loop do
-          proxy = @proxys[rand(@proxys.size)]
-          @logger.info("using #{proxy}.")
-          proxy = checker(proxy) if check
+    def query_key_filter(args)
+      proxy = Proxy.new
+      args.select{ |k| proxy.respond_to? k }
+    end
 
-          return proxy if proxy.is_a? Proxy
+    def get_random_proxy(check = true, thread_num = 10)
+      mutex       = Mutex.new
+      result      = nil
+      thread_list = []
+
+      begin
+        thread_num.times do |thread|
+          thread_list  << Thread.new do
+                            while(!result)
+                              proxy = @proxys[rand(@proxys.size)]
+                              @logger.info("using #{proxy}.")
+                              proxy = checker(proxy) if check
+
+                              if proxy.is_a? Proxy
+                                mutex.synchronize do
+                                  result = proxy
+                                end
+                              end
+                            end
+                          end
         end
+
+        thread_list.each { |t| t.join }
+      rescue => e
+        @logger.error("find proxy error. #{e.to_s}")
       ensure
         save_proxy
       end
-    end
 
-    def vaild_condition?
+      result
     end
 
     def crawling(lastest = true, check = false)
@@ -137,13 +165,13 @@ module HttpProxyPool
     def checker_batch(proxys, task_count = 5)
       result = []
       mutex = Mutex.new
-      thread_count = (proxys / task_count.to_f).ceil
+      thread_count = (proxys.size / task_count.to_f).ceil
 
       thread_count.times do |thread_idx|
         Thread.new do
           start_idx = thread_idx * task_count
-          end_idx = (thread_idx * task_count > proxys.size ? proxys.size : thread_idx * task_count)
-
+          end_idx = ((thread_idx + 1) * task_count > proxys.size ? proxys.size : (thread_idx + 1) * task_count)
+          
           proxys[start_idx..end_idx].each do |proxy|
             p = checker_single(proxy)
             mutex.synchronize  do
@@ -152,20 +180,24 @@ module HttpProxyPool
           end
         end.join
       end
+
+      result
     end
 
     def checker_single(proxy, timeout = 0.05)
       http = Net::HTTP.new('baidu.com', 80, proxy.ip, proxy.port)
       http.open_timeout = timeout
-      http.read_timeout = timeout
+      http.read_timeout = timeout * 10
 
       begin
         return proxy if http.get('/').code =~ /^[1|2|3|4]/
       rescue => e
         @logger.info("can not connect proxy.[#{proxy}].#{e.to_s}")
         @proxys.delete(proxy)
-        @logger.info("delete proxy :[#{proxy}]")
+        @logger.info("delete disabled proxy [#{proxy}].")
       end
+
+      false
     end
   end
 end
