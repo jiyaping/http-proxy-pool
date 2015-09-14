@@ -6,8 +6,8 @@ module HttpProxyPool
 
     def initialize(args = {})
       @data_path  = args[:data_path] || File.join(HttpProxyPool.home, 'ips.yaml')
-      @script     = args[:script] || Dir["#{HttpProxyPool.home}/script/*.site"]
-      @logger     = args[:logger] || HttpProxyPool.logger
+      @script     = args[:script]    || Dir["#{HttpProxyPool.home}/script/*.site"]
+      @logger     = args[:logger]    || HttpProxyPool.logger
       @proxys     = []
 
       @agent      = Mechanize.new
@@ -153,9 +153,9 @@ module HttpProxyPool
 
     def checker(proxy)
       if proxy.is_a? Array
-        return checker_batch(proxy)
+        checker_batch(proxy)
       else
-        return checker_single(proxy)
+        checker_single(proxy)
       end
     end
 
@@ -165,17 +165,19 @@ module HttpProxyPool
       thread_count = (proxys.size / task_count.to_f).ceil
 
       thread_count.times do |thread_idx|
-        Thread.new do
+        (Thread.new do
           start_idx = thread_idx * task_count
-          end_idx = ((thread_idx + 1) * task_count > proxys.size ? proxys.size : (thread_idx + 1) * task_count)
+          end_idx   = (thread_idx + 1) * task_count 
+          end_idx   = proxys.size if end_idx > proxys.size
 
           proxys[start_idx..end_idx].each do |proxy|
             p = checker_single(proxy)
+
             mutex.synchronize  do
               result<< p if p
             end
           end
-        end.join
+        end).join
       end
 
       result

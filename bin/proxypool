@@ -8,7 +8,7 @@ require "http_proxy_pool"
 
 class HttpProxyPoolApp < Thor
   @@proxy_pool = HttpProxyPool::ProxyPool.new(
-                    :data_path=> File.join(HttpProxyPool.home, 'ips.yml'),
+                    :data_path=> File.join(HttpProxyPool.home, 'ips.yaml'),
                     :script   => Dir["#{HttpProxyPool.home}/script/*.site"],
                     :logger   => HttpProxyPool.logger
                   )

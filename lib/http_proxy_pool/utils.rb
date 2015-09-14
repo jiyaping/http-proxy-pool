@@ -11,7 +11,8 @@ module HttpProxyPool
     Dir.entries(src_dir).each do |src|
       next unless src.end_with? '.site'
 
-      FileUtils.cp File.join(src_dir, src), target_dir.path unless target_dir.include? src
+      FileUtils.cp File.join(src_dir, src),
+                  target_dir.path unless target_dir.include? src
     end
   end
 

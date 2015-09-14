@@ -10,6 +10,9 @@ require 'http_proxy_pool/proxy_pool'
 require 'http_proxy_pool/version'
 
 module HttpProxyPool
+  # will support some configure
+  @config = {}
+
   @home = File.join(Dir.home, 'http_proxy_pool')
   Dir.mkdir(@home) unless Dir.exists? @home
 

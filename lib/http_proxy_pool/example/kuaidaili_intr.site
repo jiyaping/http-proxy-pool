@@ -1,6 +1,5 @@
 sitetask("http://www.kuaidaili.com/free/intr/") do
   nextpage do
-    puts agent.page
     curr_idx = 0
 
     if agent.page.at('.active')

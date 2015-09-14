@@ -17,8 +17,8 @@ module HttpProxyPool
     def sitetask(url, opts = {})
       raise ScriptError.new("script do not specify a url!") unless url
 
-      @url      = url
-      @agent    = opts[:agent] || Mechanize.new
+      @url        = url
+      @agent      = opts[:agent] || Mechanize.new
       @logger   ||= opts[:logger]
 
       #for debug
