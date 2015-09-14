@@ -4,7 +4,7 @@ module HttpProxyPool
   class ProxyPool
     attr_accessor :proxys, :logger
 
-    def initialize(args)
+    def initialize(args = {})
       @data_path  = args[:data_path] || File.join(HttpProxyPool.home, 'ips.yaml')
       @script     = args[:script] || Dir["#{HttpProxyPool.home}/script/*.site"]
       @logger     = args[:logger] || HttpProxyPool.logger
@@ -47,8 +47,6 @@ module HttpProxyPool
       end
 
       condition_str.sub!(/\s?&&\s?$/, '')
-
-      @logger.debug(condition_str)
 
       condition_str
     end
@@ -100,7 +98,6 @@ module HttpProxyPool
             proxy = Proxy.new(fields)
             (next unless checker(proxy)) if check
             @proxys << proxy unless include?(proxy)
-            puts @proxys.size
           end
         rescue => e
           @logger.error(e)
@@ -171,7 +168,7 @@ module HttpProxyPool
         Thread.new do
           start_idx = thread_idx * task_count
           end_idx = ((thread_idx + 1) * task_count > proxys.size ? proxys.size : (thread_idx + 1) * task_count)
-          
+
           proxys[start_idx..end_idx].each do |proxy|
             p = checker_single(proxy)
             mutex.synchronize  do

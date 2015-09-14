@@ -68,10 +68,10 @@ class ProxyPoolTest < Minitest::Test
     proxys = []
     proxys << HttpProxyPool::Proxy.new(:ip => '127.0.0.1', :port => '12342')
     proxys << HttpProxyPool::Proxy.new(:ip => '127.0.0.1', :port => '12346')
-    proxys << HttpProxyPool::Proxy.new(:ip => '127.0.0.1', :port => '8888')
+    proxys << HttpProxyPool::Proxy.new(:ip => '127.0.0.1', :port => '12314')
     proxys << HttpProxyPool::Proxy.new(:ip => '127.0.0.1', :port => '12345')
     proxys << HttpProxyPool::Proxy.new(:ip => '127.0.0.1', :port => '12347')
 
-    pp @proxy_pool.checker(proxys)
+    assert @proxy_pool.checker(proxys)
   end
 end
