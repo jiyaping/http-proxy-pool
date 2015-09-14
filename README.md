@@ -9,7 +9,7 @@
 
 ## 使用
 
-### 1.命令行
+##### 1.命令行
 
 * 初始化资源  
 `proxypool crawl`
@@ -22,7 +22,7 @@
 
 更多参数，参看`proxypool help`
 
-### 2.在脚本中引用
+##### 2.在脚本中引用
 
     require 'http-proxy-pool'  
 
@@ -43,7 +43,7 @@ http-proxy-pool默认脚本会安装到**[USER\_PATH]/http\_proxy\_pool/script**
 * [proxy360.cn](http://www.proxy360.cn)
 * [goubanjia.com](http://proxy.goubanjia.com)
 
-### 一个样例：
+##### 一个样例：
 	
 	# 开始抓取地址
     sitetask("start_page_url") do
@@ -59,7 +59,7 @@ http-proxy-pool默认脚本会安装到**[USER\_PATH]/http\_proxy\_pool/script**
       end
     end
 
-### 创建Proxy:
+##### 创建Proxy:
 
     HttpProxyPool::Proxy.new {
       :ip => '127.0.0.1', 				# IP地址
