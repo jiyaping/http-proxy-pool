@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.homepage    = 'https://github.com/jiyaping/http-proxy-pool'
 
   s.name	      = 'http_proxy_pool'
-  s.version	    = '0.0.1'
+  s.version	    = '0.0.2'
   s.license     = 'MIT'
   s.executables	<< 'proxypool'
   s.date	      = '2015-09-06'

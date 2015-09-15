@@ -55,6 +55,24 @@ class HttpProxyPoolApp < Thor
 
     puts @@proxy_pool.get_random_proxy(force_check, thread_num)
   end
+
+  desc 'check', 'check ip source and remove unavailable ip.'
+  method_option :task_count, :aliases  => '-c',
+                              :type     => :numeric,
+                              :default  => 5,
+                              :desc     => 'every checker thread task count.'
+  method_option :timeout, :aliases  => '-t',
+                          :type     => :numeric,
+                          :default  => 0.05,
+                          :desc     => 'check request timeout.'
+  def checker
+    task_count = options[:task_count]
+    timeout    = options[:timeout]
+
+    puts "checking ... "
+    @@proxy_pool.checker(@@proxy_pool.proxys)
+    puts "done."
+  end
 end
 
 HttpProxyPoolApp.start

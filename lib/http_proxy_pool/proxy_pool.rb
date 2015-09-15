@@ -24,7 +24,11 @@ module HttpProxyPool
     def query(args = {})
       begin
         selected_proxy = @proxys.select do |proxy|
-                           instance_eval(build_query_parameter('proxy', args))
+                            if args.size > 0
+                              instance_eval(build_query_parameter('proxy', args))
+                            else
+                              true
+                            end
                          end
       rescue => e
         raise QueryError.new("query parameter error!")
@@ -151,34 +155,49 @@ module HttpProxyPool
       agent_arr[rand(agent_arr.size)]                    
     end
 
-    def checker(proxy)
+    def checker(proxy, args = {})
+      args[:task_count] ||= 5
+      args[:timeout]    ||= 0.05
+
       if proxy.is_a? Array
-        checker_batch(proxy)
+        checker_batch(proxy, args)
       else
-        checker_single(proxy)
+        checker_single(proxy, args[:timeout])
       end
     end
 
-    def checker_batch(proxys, task_count = 5)
-      result = []
-      mutex = Mutex.new
-      thread_count = (proxys.size / task_count.to_f).ceil
+    def checker_batch(proxys, args = {})
+      args[:task_count] ||= 5
+      args[:timeout]    ||= 0.05
+
+      result  = []
+      mutex   = Mutex.new
+      thread_count = (proxys.size / args[:task_count].to_f).ceil
+      threads = []
 
       thread_count.times do |thread_idx|
-        (Thread.new do
-          start_idx = thread_idx * task_count
-          end_idx   = (thread_idx + 1) * task_count 
-          end_idx   = proxys.size if end_idx > proxys.size
+        threads <<Thread.new do
+                    start_idx = thread_idx * args[:task_count]
+                    end_idx   = (thread_idx + 1) * args[:task_count]
 
-          proxys[start_idx..end_idx].each do |proxy|
-            p = checker_single(proxy)
+                    end_idx   = proxys.size if end_idx > proxys.size
 
-            mutex.synchronize  do
-              result<< p if p
-            end
-          end
-        end).join
+                    proxys[start_idx..end_idx].each do |proxy|
+                      p = checker_single(proxy, args[:timeout])
+
+                      mutex.synchronize  do
+                        if p
+                          result<< p 
+                        else
+                          @proxys.delete(p)
+                        end
+                      end
+                    end
+                  end
       end
+
+      threads.each { |t| t.join }
+      save_proxy
 
       result
     end
@@ -196,7 +215,7 @@ module HttpProxyPool
         @logger.info("delete disabled proxy [#{proxy}].")
       end
 
-      false
+      nil
     end
   end
 end

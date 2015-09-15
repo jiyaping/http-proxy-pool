@@ -5,4 +5,5 @@ module HttpProxyPool
   class ScriptError < BaseError; end
   class TaskError < BaseError; end
   class QueryError < BaseError; end
+  class VoyagerError < BaseError; end
 end

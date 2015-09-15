@@ -74,4 +74,10 @@ class ProxyPoolTest < Minitest::Test
 
     assert @proxy_pool.checker(proxys)
   end
+
+  def test_all_ip
+    result = @proxy_pool.checker(@proxy_pool.query(:ip=> "=~ /.*/"))
+
+    assert result
+  end
 end
