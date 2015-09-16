@@ -73,6 +73,28 @@ class HttpProxyPoolApp < Thor
     @@proxy_pool.checker(@@proxy_pool.proxys)
     puts "done."
   end
+
+  desc 'voyager', 'scan proxy by ips.'
+  method_option :ip,  :aliases  => '-i',
+                      :desc     => 'ip field like [192.168.1.1/24].'
+  method_option :thread,  :aliases  => '-t',
+                          :type     => :numeric,
+                          :default  => 100,
+                          :desc     => 'scanner threads.'
+  method_option :ports, :aliases  => '-p',
+                        :desc     => 'specify the ports need scan.'                        
+  def voyager
+    raise HttpProxyPool::VoyagerError.new("need a ip string.") if options[:ip].nil? 
+
+    @voyager = HttpProxyPool::Voyager.new(@@proxy_pool)
+    ips     = options[:ip]
+    thread  = options[:threads] || 100
+    ports   = options[:ports]
+    
+    puts "scanner start ..."
+    @voyager.start(ips, thread, ports)
+    puts "scanner ended ..."
+  end
 end
 
 HttpProxyPoolApp.start

@@ -8,6 +8,7 @@ require 'http_proxy_pool/basetask'
 require 'http_proxy_pool/proxy'
 require 'http_proxy_pool/proxy_pool'
 require 'http_proxy_pool/version'
+require 'http_proxy_pool/voyager.rb'
 
 module HttpProxyPool
   # will support some configure

@@ -208,7 +208,7 @@ module HttpProxyPool
       http.read_timeout = timeout * 10
 
       begin
-        return proxy if http.get('/').code =~ /^[1|2|3|4]/
+        return proxy if http.get('/').body.index("baidu.com")
       rescue => e
         @logger.info("can not connect proxy.[#{proxy}].#{e.to_s}")
         @proxys.delete(proxy)
