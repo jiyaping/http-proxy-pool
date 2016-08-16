@@ -4,7 +4,7 @@
 
 ## 安装
 
-`gem install http-proxy-pool`
+`gem install http_proxy_pool`
 
 
 ## 使用
